@@ -11,6 +11,8 @@ These are features I would like to add:
 
 - [ ] Type checking
 
+- [ ] Compile-time Stack Underflow and Overflow Error Capturing
+
 - [ ] Generate Java Bytecode 
 
 Instruction | Behavior
