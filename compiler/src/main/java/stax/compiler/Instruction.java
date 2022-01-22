@@ -1,0 +1,250 @@
+package stax.compiler;
+
+import stax.compiler.Type.BaseType;
+
+public class Instruction {
+  
+  public enum InstructionType
+  {
+    DEFINE, DUP, DUPN, POP, POPN, SWAP, BUBBN, SINKN,
+    EVAL, EVALIF, TYPEOF, NAMEOF, HERE, FIRST, REST,
+    NOT, OR, AND, ADD, SUB, MULT, DIVMOD,
+    PRINT, INPUT, SET,
+
+    PUSHVAL, PUSHLIST, PUSHEXPR
+  }
+
+  public Type type;
+  public InstructionType instructionType;
+  public Token token;
+  public Value value;
+  
+  public Instruction(Type t, InstructionType it, Token to)
+  {
+    type = t;
+    instructionType = it;
+    token = to;
+  }
+
+  public Instruction(Type t, InstructionType it, Value val)
+  {
+    type = t;
+    instructionType = it;
+    value = val;
+  }
+
+  public String toString()
+  {
+    return instructionType.toString() + " - " + type.toString() + (value != null ? " >> " + value.toString() : "");
+  }
+
+  public static Instruction CreateSet(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ID));
+    defineType.inputs.add(new Type(BaseType.ANY));
+    return new Instruction(defineType, InstructionType.SET, token);
+  }
+
+  public static Instruction CreateDefine(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ID));
+    defineType.inputs.add(new Type(BaseType.LIST));
+    defineType.inputs.add(new Type(BaseType.LIST));
+    defineType.inputs.add(new Type(BaseType.EXPR, BaseType.ANYNUM, BaseType.ANYNUM));
+    return new Instruction(defineType, InstructionType.DEFINE, token);
+  }
+
+  public static Instruction CreateDup(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY, "T"));
+    defineType.outputs.add(new Type(BaseType.ANY, "T"));
+    defineType.outputs.add(new Type(BaseType.ANY, "T"));
+    return new Instruction(defineType, InstructionType.DUP, token);
+  }
+
+  public static Instruction CreateDupN(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANYNUM));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.ANYNUM));
+    return new Instruction(defineType, InstructionType.DUPN, token);
+    // when type checking we need to override these "***n" methods to show how they change the stack
+  }
+
+  public static Instruction CreatePop(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY));
+    return new Instruction(defineType, InstructionType.POP, token);
+  }
+
+  public static Instruction CreatePopN(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANYNUM));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.POPN, token);
+  }
+
+  public static Instruction CreateSwap(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY, "T"));
+    defineType.inputs.add(new Type(BaseType.ANY, "U"));
+    defineType.outputs.add(new Type(BaseType.ANY, "U"));
+    defineType.outputs.add(new Type(BaseType.ANY, "T"));
+    return new Instruction(defineType, InstructionType.SWAP, token);
+  }
+
+  public static Instruction CreateBubbN(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY, "T"));
+    defineType.inputs.add(new Type(BaseType.ANYNUM, "U"));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.ANYNUM, "U"));
+    defineType.outputs.add(new Type(BaseType.ANY, "T"));
+    return new Instruction(defineType, InstructionType.BUBBN, token);
+  }
+
+  public static Instruction CreateSinkN(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANYNUM, "T"));
+    defineType.inputs.add(new Type(BaseType.ANY, "U"));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.ANY, "U"));
+    defineType.outputs.add(new Type(BaseType.ANYNUM, "T"));
+    return new Instruction(defineType, InstructionType.SINKN, token);
+  }
+
+  public static Instruction CreateEval(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANYNUM));
+    defineType.inputs.add(new Type(BaseType.EXPR, BaseType.ANYNUM, BaseType.ANYNUM));
+    defineType.outputs.add(new Type(BaseType.ANYNUM));
+    return new Instruction(defineType, InstructionType.EVAL, token);
+  }
+
+  public static Instruction CreateEvalIf(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANYNUM));
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.inputs.add(new Type(BaseType.EXPR, BaseType.ANYNUM, BaseType.ANYNUM));
+    defineType.outputs.add(new Type(BaseType.ANYNUM));
+    defineType.outputs.add(new Type(BaseType.BOOL));
+    return new Instruction(defineType, InstructionType.EVALIF, token);
+  }
+
+  public static Instruction CreateTypeOf(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY));
+    defineType.outputs.add(new Type(BaseType.STRING));
+    return new Instruction(defineType, InstructionType.TYPEOF, token);
+  }
+
+  public static Instruction CreateNameOf(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY));
+    defineType.outputs.add(new Type(BaseType.STRING));
+    return new Instruction(defineType, InstructionType.NAMEOF, token);
+  }
+
+  public static Instruction CreateHere(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.outputs.add(new Type(BaseType.STRING));
+    return new Instruction(defineType, InstructionType.HERE, token);
+  }
+
+  public static Instruction CreateFirst(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.LIST));
+    defineType.outputs.add(new Type(BaseType.ANY));
+    return new Instruction(defineType, InstructionType.FIRST, token);
+  }
+
+  public static Instruction CreateRest(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.LIST));
+    defineType.outputs.add(new Type(BaseType.LIST));
+    return new Instruction(defineType, InstructionType.REST, token);
+  }
+
+  public static Instruction CreateNot(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.outputs.add(new Type(BaseType.BOOL));
+    return new Instruction(defineType, InstructionType.NOT, token);
+  }
+
+  public static Instruction CreateOr(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.outputs.add(new Type(BaseType.BOOL));
+    return new Instruction(defineType, InstructionType.OR, token);
+  }
+
+  public static Instruction CreateAnd(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.inputs.add(new Type(BaseType.BOOL));
+    defineType.outputs.add(new Type(BaseType.BOOL));
+    return new Instruction(defineType, InstructionType.AND, token);
+  }
+
+  public static Instruction CreateAdd(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.ADD, token);
+  }
+
+  public static Instruction CreateSub(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.SUB, token);
+  }
+
+  public static Instruction CreateMult(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.MULT, token);
+  }
+
+  public static Instruction CreateDivMod(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.inputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.DIVMOD, token);
+  }
+
+  public static Instruction CreatePrint(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.ANY));
+    return new Instruction(defineType, InstructionType.PRINT, token);
+  }
+
+  public static Instruction CreateInput(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.outputs.add(new Type(BaseType.STRING));
+    return new Instruction(defineType, InstructionType.INPUT, token);
+  }
+
+  public static Instruction CreatePushVal(Value val) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.outputs.add(new Type(BaseType.ANY));
+    return new Instruction(defineType, InstructionType.PUSHVAL, val);
+  }
+
+  public static Instruction CreatePushList(int amount) {
+    Type defineType = new Type(BaseType.EXPR);
+    for (int i = 0; i < amount; i++) {
+      defineType.inputs.add(new Type(BaseType.ANY));
+    }
+    defineType.outputs.add(new Type(BaseType.LIST));
+    return new Instruction(defineType, InstructionType.PUSHLIST, (Token)null);
+  }
+}

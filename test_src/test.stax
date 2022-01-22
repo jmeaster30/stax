@@ -1,0 +1,7 @@
+apply2 [expr{_, _ : num}, num] [num] ( dup 2 bubbn eval ) def
+
+if [bool, expr] [] ( evalif pop ) def
+
+ifelse [bool, expr, expr] [] ( 2 sinkn evalif not swap evalif pop ) def
+
+* 4 apply2
