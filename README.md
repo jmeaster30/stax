@@ -5,13 +5,13 @@ This is a toy programming language so I could figure out stack-based programming
 
 These are features I would like to add:
 
--[ ] Better string functionality
+- [ ] Better string functionality
 
--[ ] Better Error Handling
+- [ ] Better Error Handling
 
--[ ] Type checking
+- [ ] Type checking
 
--[ ] Generate Java Bytecode 
+- [ ] Generate Java Bytecode 
 
 Instruction | Behavior
 ------------|---------
