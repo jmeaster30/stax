@@ -1,6 +1,6 @@
 package stax.compiler;
 
-import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 import stax.compiler.Token.TokenType;
@@ -13,29 +13,29 @@ public class Compiler {
   private Lexer lexer;
   private ArrayList<Pass> semanticPasses;
 
-  public Compiler(String sourcePath) throws FileNotFoundException
+  public Compiler(FileReader fileReader)
   {
     instructions = new ArrayList<>();
-    lexer = Lexer.fromFilepath(sourcePath);
+    lexer = Lexer.fromFile(fileReader);
+    semanticPasses = new ArrayList<>();
+    semanticPasses.add(new Passthrough());
+  }
+
+  public Compiler(String source)
+  {
+    instructions = new ArrayList<>();
+    lexer = Lexer.fromSource(source);
     semanticPasses = new ArrayList<>();
     semanticPasses.add(new Passthrough());
   }
 
   public void compile()
   {
-    System.out.println("Start Compiling...");
-
     ArrayList<Token> tokens = lexer.getAll();
     instructions = parse(tokens);
 
     for (int i = 0; i < semanticPasses.size(); i++) {
       instructions = semanticPasses.get(i).run(instructions);
-    }
-
-    for (int i = 0; i < instructions.size(); i++)
-    {
-      Instruction in = instructions.get(i);
-      System.out.println(in.toString());
     }
   }
 
@@ -176,33 +176,41 @@ public class Compiler {
     }
     else if (token.type == TokenType.KEYWORD) {
       switch (token.lexeme) {
-        case "set":    insts.add(Instruction.CreateSet(token)); break;
-        case "def":    insts.add(Instruction.CreateDefine(token)); break;
-        case "dup":    insts.add(Instruction.CreateDup(token)); break;
-        case "dupn":   insts.add(Instruction.CreateDupN(token)); break;
-        case "pop":    insts.add(Instruction.CreatePop(token)); break;
-        case "popn":   insts.add(Instruction.CreatePopN(token)); break;
-        case "swap":   insts.add(Instruction.CreateSwap(token)); break;
-        case "bubbn":  insts.add(Instruction.CreateBubbN(token)); break;
-        case "sinkn":  insts.add(Instruction.CreateSinkN(token)); break;
-        case "true":   insts.add(Instruction.CreatePushVal(new Value(BaseType.BOOL, token))); break;
-        case "false":  insts.add(Instruction.CreatePushVal(new Value(BaseType.BOOL, token))); break;
-        case "eval":   insts.add(Instruction.CreateEval(token)); break;
-        case "evalif": insts.add(Instruction.CreateEvalIf(token)); break;
-        case "typeof": insts.add(Instruction.CreateTypeOf(token)); break;
-        case "nameof": insts.add(Instruction.CreateNameOf(token)); break;
-        case "here":   insts.add(Instruction.CreateHere(token)); break;
-        case "first":  insts.add(Instruction.CreateFirst(token)); break;
-        case "rest":   insts.add(Instruction.CreateRest(token)); break;
-        case "not":    insts.add(Instruction.CreateNot(token)); break;
-        case "or":     insts.add(Instruction.CreateOr(token)); break;
-        case "and":    insts.add(Instruction.CreateAnd(token)); break;
-        case "add":    insts.add(Instruction.CreateAdd(token)); break;
-        case "sub":    insts.add(Instruction.CreateSub(token)); break;
-        case "mult":   insts.add(Instruction.CreateMult(token)); break;
-        case "divmod": insts.add(Instruction.CreateDivMod(token)); break;
-        case "print":  insts.add(Instruction.CreatePrint(token)); break;
-        case "input":  insts.add(Instruction.CreateInput(token)); break;
+        case "set":     insts.add(Instruction.CreateSet(token)); break;
+        case "def":     insts.add(Instruction.CreateDefine(token)); break;
+        case "dup":     insts.add(Instruction.CreateDup(token)); break;
+        case "dupn":    insts.add(Instruction.CreateDupN(token)); break;
+        case "pop":     insts.add(Instruction.CreatePop(token)); break;
+        case "popn":    insts.add(Instruction.CreatePopN(token)); break;
+        case "swap":    insts.add(Instruction.CreateSwap(token)); break;
+        case "bubbn":   insts.add(Instruction.CreateBubbN(token)); break;
+        case "sinkn":   insts.add(Instruction.CreateSinkN(token)); break;
+        case "true":    insts.add(Instruction.CreatePushVal(new Value(BaseType.BOOL, token))); break;
+        case "false":   insts.add(Instruction.CreatePushVal(new Value(BaseType.BOOL, token))); break;
+        case "eval":    insts.add(Instruction.CreateEval(token)); break;
+        case "evalif":  insts.add(Instruction.CreateEvalIf(token)); break;
+        case "typeof":  insts.add(Instruction.CreateTypeOf(token)); break;
+        case "nameof":  insts.add(Instruction.CreateNameOf(token)); break;
+        case "here":    insts.add(Instruction.CreateHere(token)); break;
+        case "first":   insts.add(Instruction.CreateFirst(token)); break;
+        case "rest":    insts.add(Instruction.CreateRest(token)); break;
+        case "not":     insts.add(Instruction.CreateNot(token)); break;
+        case "or":      insts.add(Instruction.CreateOr(token)); break;
+        case "and":     insts.add(Instruction.CreateAnd(token)); break;
+        case "add":     insts.add(Instruction.CreateAdd(token)); break;
+        case "sub":     insts.add(Instruction.CreateSub(token)); break;
+        case "mult":    insts.add(Instruction.CreateMult(token)); break;
+        case "div":     insts.add(Instruction.CreateDiv(token)); break;
+        case "divmod":  insts.add(Instruction.CreateDivMod(token)); break;
+        case "eq":      insts.add(Instruction.CreateEq(token)); break;
+        case "neq":     insts.add(Instruction.CreateNeq(token)); break;
+        case "lt":      insts.add(Instruction.CreateLt(token)); break;
+        case "gt":      insts.add(Instruction.CreateGt(token)); break;
+        case "lte":     insts.add(Instruction.CreateLte(token)); break;
+        case "gte":     insts.add(Instruction.CreateGte(token)); break;
+        case "print":   insts.add(Instruction.CreatePrint(token)); break;
+        case "println": insts.add(Instruction.CreatePrintln(token)); break;
+        case "input":   insts.add(Instruction.CreateInput(token)); break;
         default: break;
       }
     }

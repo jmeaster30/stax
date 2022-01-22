@@ -31,6 +31,16 @@ public class Token {
     columnEnd = colEnd;
   }
 
+  public Token(Token orig)
+  {
+    type = orig.type;
+    error = orig.error;
+    lexeme = orig.lexeme;
+    line = orig.line;
+    columnStart = orig.columnStart;
+    columnEnd = orig.columnEnd;
+  }
+
   public String toString()
   {
     return "[" + type.toString() + " - " + error.toString() + ": '" + lexeme + "' (" + line + ", " + columnStart +  ")]";

@@ -1,0 +1,17 @@
+# Find the difference between the sum of the squares of the 
+#  first one hundred natural numbers and the square of the sum.
+
+bound 100 set
+
+sumsq (
+  dup dup 1 add swap 2 mult 1 add mult mult 6 div
+) set
+
+sqsum (
+  dup 1 add mult 2 div dup mult
+) set
+
+bound sqsum eval 
+bound sumsq eval
+sub
+println

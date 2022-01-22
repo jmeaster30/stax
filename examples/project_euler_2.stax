@@ -1,0 +1,18 @@
+# Find the sum of even-valued Fibonacci numbers less than 4 million
+
+a 1 set
+b 2 set
+
+2
+fib (
+  a b add dup dup
+  a b set         
+  b swap set
+  4000000 lt swap
+  dup 2 divmod pop 0 neq
+  ( pop 0 ) evalif pop swap
+  fib evalif pop
+  add
+) set
+
+fib eval println

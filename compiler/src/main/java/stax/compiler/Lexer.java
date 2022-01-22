@@ -1,10 +1,9 @@
 package stax.compiler;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,17 +19,26 @@ public class Lexer {
   // private int colNum;
   // private int offset;
 
-  public static Lexer fromFilepath(String sourcePath) throws FileNotFoundException
+  public static Lexer fromFile(FileReader source)
   {
-    return new Lexer(new File(sourcePath));
+    return new Lexer(source);
   }
 
-  private Lexer(File inputFile) throws FileNotFoundException
+  public static Lexer fromSource(String source)
+  {
+    return new Lexer(source);
+  }
+
+  private Lexer(FileReader inputFile)
   {
     end = false;
-    FileReader fr = new FileReader(inputFile);
-    BufferedReader br = new BufferedReader(fr);
-    input = br;
+    input = new BufferedReader(inputFile);
+  }
+
+  private Lexer(String source)
+  {
+    end = false;
+    input = new BufferedReader(new StringReader(source));
   }
 
   public ArrayList<Token> getAll()
@@ -80,8 +88,10 @@ public class Lexer {
   private String[] keywords = {
     "def", "dup", "dupn", "pop", "popn", "swap", "bubbn", "sinkn",
     "true", "false", "eval", "evalif", "typeof", "nameof", "here",
-    "first", "rest", "not", "or", "and", "add", "sub", "mult", "divmod",
-    "print", "input", "set"
+    "first", "rest", "not", "or", "and",
+    "add", "sub", "mult", "div", "divmod",
+    "eq", "neq", "lt", "gt", "lte", "gte",
+    "print", "println", "input", "set"
   };
 
   private String[] types = {
@@ -159,6 +169,14 @@ public class Lexer {
             input.reset();
           }
           break;
+        } else if ((char)c == '#') {
+          if (lex.length() == 0) {
+            while((char)c != '\n' && c != -1) {
+              c = input.read();
+            }
+          } else {
+            input.reset();
+          }
         } else {
           lex.append((char)c);
         }

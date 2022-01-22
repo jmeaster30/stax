@@ -1,0 +1,56 @@
+# If we list all the natural numbers below 10 that are multiples of 3 or 5,
+#   we get 3, 5, 6 and 9. The sum of these multiples is 23.
+# Find the sum of all the multiples of 3 or 5 below 1000. (233168)
+
+bound 1000 set
+result 0 set
+
+#---- brute force solution
+#
+# sumres ( dup result swap result add set ) set
+#
+# funcfive (
+#   dup
+#   5 divmod pop 0 eq
+#   sumres evalif pop
+#) set
+#
+#func (
+#  1 sub dup
+#  3 divmod pop 0 eq
+#  sumres evalif not
+#  funcfive evalif pop
+#  dup 1 neq func evalif
+#) set
+#
+#bound func eval
+#result println
+#--------
+
+#---- closed form
+
+sum3 (
+  1 sub 3 divmod swap pop
+  dup 1 add mult 3 mult
+  2 div
+) set
+
+sum5 (
+  1 sub 5 divmod swap pop
+  dup 1 add mult 5 mult
+  2 div
+) set
+
+sum15 (
+  1 sub 15 divmod swap pop
+  dup 1 add mult 15 mult
+  2 div
+) set
+
+bound sum3 eval
+bound sum5 eval
+add
+bound sum15 eval
+sub
+println
+#--------

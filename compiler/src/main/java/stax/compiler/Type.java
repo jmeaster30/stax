@@ -22,6 +22,13 @@ public class Type {
     outputs = new ArrayList<>();
   }
 
+  public Type(Type orig) {
+    baseType = orig.baseType;
+    name = orig.name;
+    inputs = new ArrayList<>(orig.inputs);
+    outputs = new ArrayList<>(orig.outputs);
+  }
+
   public Type(BaseType t) {
     baseType = t;
     inputs = new ArrayList<>();

@@ -1,7 +1,6 @@
-apply2 [expr{_, _ : num}, num] [num] ( dup 2 bubbn eval ) def
+total 5 set
 
-if [bool, expr] [] ( evalif pop ) def
+total total 7 mult set
 
-ifelse [bool, expr, expr] [] ( 2 sinkn evalif not swap evalif pop ) def
-
-* 4 apply2
+total println
+total 35 neq println

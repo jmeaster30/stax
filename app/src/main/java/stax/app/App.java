@@ -2,7 +2,7 @@ package stax.app;
 
 import java.io.FileNotFoundException;
 
-import stax.compiler.Compiler;
+import stax.runner.StaxRunner;
 
 public class App {
   public static void main(String[] args) {
@@ -18,13 +18,24 @@ public class App {
       return;
     }
         
-    if (opts.interpret || opts.compile) {
+    if (opts.interpret) {
+      StaxRunner runner = new StaxRunner();
       try {
-        Compiler comp = new Compiler(opts.source);
-        comp.compile();
+        runner.CompileFile(opts.source);
+        runner.Run(opts.debug);
       } catch (FileNotFoundException e) {
         System.err.println("ERROR :: File Not Found '" + opts.source + "'");
       }
+    }
+    
+    if (opts.compile) {
+      /*StaxGenerator gen = new StaxGenerator();
+      try {
+        gen.CompileFile(opts.source);
+        gen.Generate();
+      } catch (FileNotFoundException e) {
+        System.err.println("ERROR :: File Not Found '" + opts.source + "'");
+      }*/
     }
   }
 
@@ -32,12 +43,14 @@ public class App {
     public boolean interpret  = false;
     public boolean compile    = false;
     public boolean help       = false;
+    public boolean debug      = false;
     public String  source     = "";
 
-    public Options(boolean interp, boolean comp, boolean helpme, String sourceFile) {
+    public Options(boolean interp, boolean comp, boolean deb, boolean helpme, String sourceFile) {
       interpret = interp;
       compile = comp;
       help = helpme;
+      debug = deb;
       source = sourceFile;
     }
   }
@@ -47,6 +60,7 @@ public class App {
     boolean interp = false;
     boolean comp = false;
     boolean help = false;
+    boolean debug = false;
     String src = "";
     
     if (args.length == 0) {
@@ -58,6 +72,10 @@ public class App {
           break;
         case "run":
           interp = true;
+          break;
+        case "debug":
+          interp = true;
+          debug = true;
           break;
         case "help":
           help = true;
@@ -76,6 +94,6 @@ public class App {
       }
     }
 
-    return new Options(interp, comp, help, src);
+    return new Options(interp, comp, debug, help, src);
   }
 }
