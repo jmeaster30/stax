@@ -45,6 +45,8 @@ public class Value {
       s += " : " + token.lexeme;
     } else if (type.baseType == BaseType.NUMBER) { 
       s += " : " + (token == null ? numval.toString() : token.lexeme);
+    } else if (type.baseType == BaseType.STRING) {
+      s += " : " + (token == null ? stringval : token.lexeme);
     } else if (values != null && !values.isEmpty()) {
       s += " - [";
       for (int i = 0; i < values.size(); i++) {
@@ -173,6 +175,21 @@ public class Value {
       case ID: return context.containsKey(token.lexeme) ? context.get(token.lexeme).GetPrintString(context, stringWrapped) : token.lexeme;
       default: return "";
     }
+  }
+
+  public String GetDebugString() {
+    String s = "(" + type.baseType.toString();
+    switch (type.baseType) {
+      case BOOL: s += " : " + (token == null ? boolval : token.lexeme); break;
+      case NUMBER: s += " : " + (token == null ? numval.toString() : token.lexeme); break;
+      case STRING: s += " : " + (token == null ? stringval : token.lexeme); break;
+      case EXPR: s += " : " + instructionsString(); break;
+      case LIST: s += " : " + listString(); break;
+      case ID: s += " : " + token.lexeme; break;
+      default: s += ""; break;
+    }
+    s += " )";
+    return s;
   }
 
   public Value GetResolvedValue(HashMap<String, Value> context) {

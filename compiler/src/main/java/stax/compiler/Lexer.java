@@ -87,16 +87,38 @@ public class Lexer {
 
   private String[] keywords = {
     "def", "dup", "dupn", "pop", "popn", "swap", "bubbn", "sinkn",
-    "true", "false", "eval", "evalif", "typeof", "nameof", "here",
-    "first", "rest", "not", "or", "and",
+    "true", "false", "eval", "evalif", "typeof",
+    "first", "rest", "len", "concat", "not", "or", "and",
     "add", "sub", "mult", "div", "divmod",
     "eq", "neq", "lt", "gt", "lte", "gte",
     "print", "println", "input", "set"
   };
 
   private String[] types = {
-    "num", "str", "list", "bool", "char", "id", "expr"
+    "num", "str", "list", "bool", "id", "expr"
   };
+
+  private String escapeCharacters(String str)
+  {
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      char result = c;
+      if (c == '\\' && i < str.length() - 1) {
+        i += 1;
+        char v = str.charAt(i);
+        switch (v) {
+          case 'n':  result = (char)10; break;
+          case 't':  result = (char)9; break;
+          default:   result = v; break;
+        }
+      }
+      sb.append(result);
+    }
+
+    return sb.toString();
+  }
 
   private Token buildToken(String lexeme)
   {
@@ -118,6 +140,8 @@ public class Lexer {
       if (lexeme.charAt(lexeme.length() - 1) != lexeme.charAt(0)) {
         type = TokenType.ERROR;
         error = TokenError.UNCLOSED_STRING;
+      } else {
+        lexeme = escapeCharacters(lexeme.substring(1, lexeme.length() - 1));
       }
     }
     else if (lexeme.charAt(0) == '(' && lexeme.length() == 1)  { type = TokenType.LPAREN; }
@@ -192,7 +216,7 @@ public class Lexer {
     } catch (Exception e) {
       currentToken = new Token(TokenType.ERROR, TokenError.FILE_ERROR, "An error occured while reading the source file: " + lex, 0, 0, 0);
     }
-    currentToken = buildToken(lex.toString());
+    currentToken = buildToken(lex.toString().trim());
   }
 
 }

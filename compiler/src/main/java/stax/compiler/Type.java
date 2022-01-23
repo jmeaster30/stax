@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Type {
   
   public enum BaseType {
-    NUMBER, STRING, LIST, BOOL, CHAR, ID, EXPR, TYPE,
+    NUMBER, STRING, LIST, BOOL, ID, EXPR, TYPE,
     UNKNOWN, //Single type to be type resolved
     UNKNOWNNUM, //many types to be type resolved
     ANY,     //any single type
@@ -103,7 +103,6 @@ public class Type {
       case "str": return new Type(BaseType.STRING);
       case "list": return new Type(BaseType.LIST);
       case "bool": return new Type(BaseType.BOOL);
-      case "char": return new Type(BaseType.CHAR);
       case "id": return new Type(BaseType.ID);
       case "expr": return new Type(BaseType.EXPR);
       default: return null;

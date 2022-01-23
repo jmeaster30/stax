@@ -13,6 +13,7 @@ import java.util.Scanner;
 import stax.compiler.Compiler;
 import stax.compiler.Instruction;
 import stax.compiler.Value;
+import stax.compiler.Type.BaseType;
 
 public class StaxRunner {
 
@@ -21,12 +22,15 @@ public class StaxRunner {
   private Stack<Value> memoryStack;
   private HashMap<String, Value> context;
   private ArrayList<Instruction> instructions;
+  private Scanner scanner;
 
   public StaxRunner() {
     depth = 0;
     instructions = new ArrayList<>();
     memoryStack = new Stack<>();
     context = new HashMap<>();
+
+    scanner = new Scanner(System.in);
   }
 
   public StaxRunner(boolean messages) {
@@ -35,6 +39,8 @@ public class StaxRunner {
     instructions = new ArrayList<>();
     memoryStack = new Stack<>();
     context = new HashMap<>();
+
+    scanner = new Scanner(System.in);
   }
 
   public StaxRunner(ArrayList<Instruction> insts, Stack<Value> mem, HashMap<String, Value> ctxt, int dep)
@@ -66,8 +72,6 @@ public class StaxRunner {
 
   public Stack<Value> Run(boolean interactiveDebug)
   {
-    Scanner scanner = new Scanner(System.in);
-
     for (int i = 0; i < instructions.size(); i++)
     {
       Instruction inst = instructions.get(i);
@@ -161,26 +165,60 @@ public class StaxRunner {
           memoryStack.push(Value.CreateString(val.type.toString()));
           break;
         }
-        case NAMEOF:
-          System.err.println("ERROR :: Nameof unimplemented :(");
-          break;
-        case HERE:
-          System.err.println("ERROR :: Here unimplemented :(");
-          break;
         case FIRST: {
-          ArrayList<Value> list = memoryStack.pop().GetListValue(context);
-          if (list.isEmpty()) {
-            System.err.println("ERROR :: first on empty lists unimplemented :(");
+          Value topval = memoryStack.pop().GetResolvedValue(context);
+          if (topval.type.baseType == BaseType.STRING) {
+            String value = topval.GetStringValue(context, false);
+            if (value.length() > 0) {
+              memoryStack.push(Value.CreateString(value.charAt(0) + ""));
+            } else {
+              memoryStack.push(Value.CreateString(""));
+            }
+          } else if (topval.type.baseType == BaseType.LIST) {
+            ArrayList<Value> list = topval.GetListValue(context);
+            if (list.isEmpty()) {
+              System.err.println("ERROR :: first on empty lists unimplemented :(");
+            }
+            memoryStack.push(list.get(0));
           }
-          memoryStack.push(list.get(0));
           break;
         }
         case REST: {
-          ArrayList<Value> list = memoryStack.pop().GetListValue(context);
-          if (!list.isEmpty()) {
-            list.remove(0);
+          Value topval = memoryStack.pop().GetResolvedValue(context);
+          if (topval.type.baseType == BaseType.STRING) {
+            String value = topval.GetStringValue(context, false);
+            if (value.length() > 1) {
+              memoryStack.push(Value.CreateString(value.substring(1)));
+            } else {
+              memoryStack.push(Value.CreateString(""));
+            }
+          } else if (topval.type.baseType == BaseType.LIST) {
+            ArrayList<Value> list = memoryStack.pop().GetListValue(context);
+            if (!list.isEmpty()) {
+              list.remove(0);
+            }
+            memoryStack.push(Value.CreateList(list));
           }
-          memoryStack.push(Value.CreateList(list));
+          break;
+        }
+        case LEN: {
+          Value topval = memoryStack.pop();
+          Value res = topval.GetResolvedValue(context);
+          if (res.type.baseType == BaseType.STRING) {
+            String value = res.GetStringValue(context, false);
+            memoryStack.push(Value.CreateNumber(new BigDecimal(value.length())));
+          } else if (res.type.baseType == BaseType.LIST) {
+            ArrayList<Value> values = res.GetListValue(context);
+            memoryStack.push(Value.CreateNumber(new BigDecimal(values.size())));
+          } else {
+            memoryStack.push(topval);
+          }
+          break;
+        }
+        case CONCAT: {
+          String b = memoryStack.pop().GetStringValue(context, false);
+          String a = memoryStack.pop().GetStringValue(context, false);
+          memoryStack.push(Value.CreateString(a + b));
           break;
         }
         case NOT: {
@@ -225,39 +263,171 @@ public class StaxRunner {
           break;
         }
         case EQ: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) == 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) == 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(as.equals(bs)));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(false));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(false));
+          }
           break;
         }
         case NEQ: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) != 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) != 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(!as.equals(bs)));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(true));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(true));
+          }
           break;
         }
         case LT: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) < 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) < 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(as.compareTo(bs) < 0));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(false));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(false));
+          }
           break;
         }
         case GT: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) > 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) > 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(as.compareTo(bs) > 0));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(false));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(false));
+          }
           break;
         }
         case LTE: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) <= 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) <= 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(as.compareTo(bs) <= 0));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(false));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(false));
+          }
           break;
         }
         case GTE: {
-          BigDecimal b = memoryStack.pop().GetNumberValue(context);
-          BigDecimal a = memoryStack.pop().GetNumberValue(context);
-          memoryStack.push(Value.CreateBool(a.compareTo(b) >= 0));
+          Value b = memoryStack.pop().GetResolvedValue(context);
+          Value a = memoryStack.pop().GetResolvedValue(context);
+          if (b.type.baseType == a.type.baseType)
+          {
+            if (b.type.baseType == BaseType.NUMBER)
+            {
+              BigDecimal bnum = b.GetNumberValue(context);
+              BigDecimal anum = a.GetNumberValue(context);
+              memoryStack.push(Value.CreateBool(anum.compareTo(bnum) >= 0));
+            }
+            else if (b.type.baseType == BaseType.STRING)
+            {
+              String bs = b.GetStringValue(context, false);
+              String as = a.GetStringValue(context, false);
+              memoryStack.push(Value.CreateBool(as.compareTo(bs) >= 0));
+            }
+            else
+            {
+              memoryStack.push(Value.CreateBool(false));
+            }
+          }
+          else
+          {
+            memoryStack.push(Value.CreateBool(false));
+          }
           break;
         }
         case DIVMOD: {
@@ -288,13 +458,13 @@ public class StaxRunner {
         System.out.println("[" + depth + "] :: " + inst.GetPrintString(false));
         System.out.print("\t");
         for (int x = memoryStack.size() - 1; x >= 0 && x >= memoryStack.size() - 11; x--) {
-          System.out.print(memoryStack.get(x).toString() + " | ");
+          System.out.print(memoryStack.get(x).GetDebugString() + " | ");
         }
         System.out.println("");
         for (Map.Entry<String, Value> variable : context.entrySet()) {
           System.out.println("\t" + variable.getKey() + " = " + variable.getValue().GetPrintString(context));
         }
-        scanner.nextLine();
+        //scanner.nextLine();
       }
 
     }
@@ -308,7 +478,8 @@ public class StaxRunner {
       }
     }
 
-    scanner.close();
+    if (depth == 0)
+      scanner.close();
 
     return memoryStack;
   }

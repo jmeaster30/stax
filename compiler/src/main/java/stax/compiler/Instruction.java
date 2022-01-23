@@ -7,7 +7,7 @@ public class Instruction {
   public enum InstructionType
   {
     DEFINE, DUP, DUPN, POP, POPN, SWAP, BUBBN, SINKN,
-    EVAL, EVALIF, TYPEOF, NAMEOF, HERE, FIRST, REST,
+    EVAL, EVALIF, TYPEOF, FIRST, REST, LEN, CONCAT,
     NOT, OR, AND, ADD, SUB, MULT, DIV, DIVMOD,
     EQ, NEQ, LT, GT, LTE, GTE,
     PRINT, PRINTLN, INPUT, SET,
@@ -150,19 +150,6 @@ public class Instruction {
     defineType.inputs.add(new Type(BaseType.ANY));
     defineType.outputs.add(new Type(BaseType.STRING));
     return new Instruction(defineType, InstructionType.TYPEOF, token);
-  }
-
-  public static Instruction CreateNameOf(Token token) {
-    Type defineType = new Type(BaseType.EXPR);
-    defineType.inputs.add(new Type(BaseType.ANY));
-    defineType.outputs.add(new Type(BaseType.STRING));
-    return new Instruction(defineType, InstructionType.NAMEOF, token);
-  }
-
-  public static Instruction CreateHere(Token token) {
-    Type defineType = new Type(BaseType.EXPR);
-    defineType.outputs.add(new Type(BaseType.STRING));
-    return new Instruction(defineType, InstructionType.HERE, token);
   }
 
   public static Instruction CreateFirst(Token token) {
@@ -322,5 +309,20 @@ public class Instruction {
     }
     defineType.outputs.add(new Type(BaseType.LIST));
     return new Instruction(defineType, InstructionType.PUSHLIST, (Token)null);
+  }
+
+	public static Instruction CreateLen(Token token) {
+		Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.LIST));
+    defineType.outputs.add(new Type(BaseType.NUMBER));
+    return new Instruction(defineType, InstructionType.LEN, token);
+	}
+
+  public static Instruction CreateConcat(Token token) {
+    Type defineType = new Type(BaseType.EXPR);
+    defineType.inputs.add(new Type(BaseType.STRING));
+    defineType.inputs.add(new Type(BaseType.STRING));
+    defineType.outputs.add(new Type(BaseType.STRING));
+    return new Instruction(defineType, InstructionType.CONCAT, token);
   }
 }

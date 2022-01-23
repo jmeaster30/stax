@@ -1,0 +1,24 @@
+# What is the smallest positive number that is evenly 
+#   divisible by all of the numbers from 1 to 20?
+
+gcd (
+  dup 0 eq
+  ( pop ) evalif not
+  ( dup 2 sinkn divmod pop gcd eval ) evalif
+  pop
+) set
+
+lcm (
+  2 dupn mult
+  2 sinkn gcd eval
+  divmod swap pop
+) set
+
+func (
+  1 sub dup 2 sinkn
+  lcm eval swap
+  dup 1 neq
+  func evalif pop
+) set
+
+20 dup func eval pop println

@@ -1,0 +1,18 @@
+# longest common prefix
+
+lcploop (
+  2 dupn first swap first eq
+  ( dup first 2 sinkn rest swap rest lcploop eval ) evalif not
+  ( pop pop '' '' '' ) evalif pop
+  concat
+) set
+
+# need this because it will have the start character
+# and the rest of the string on the stack so we need
+# one final concat call
+lcp ( lcploop eval concat ) set
+
+'flop' 'flower' lcp eval
+dup '' eq
+( pop 'no common prefix' ) evalif pop 
+println

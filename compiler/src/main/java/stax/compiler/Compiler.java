@@ -32,6 +32,11 @@ public class Compiler {
   public void compile()
   {
     ArrayList<Token> tokens = lexer.getAll();
+
+    //for(Token token : tokens) {
+    //  System.out.println(token.toString());
+    //}
+
     instructions = parse(tokens);
 
     for (int i = 0; i < semanticPasses.size(); i++) {
@@ -96,10 +101,6 @@ public class Compiler {
     else if (token.lexeme.equals("bool"))
     {
       type.type = new Type(BaseType.BOOL);
-    }
-    else if (token.lexeme.equals("char"))
-    {
-      type.type = new Type(BaseType.CHAR);
     }
     else if (token.lexeme.equals("id"))
     {
@@ -190,10 +191,10 @@ public class Compiler {
         case "eval":    insts.add(Instruction.CreateEval(token)); break;
         case "evalif":  insts.add(Instruction.CreateEvalIf(token)); break;
         case "typeof":  insts.add(Instruction.CreateTypeOf(token)); break;
-        case "nameof":  insts.add(Instruction.CreateNameOf(token)); break;
-        case "here":    insts.add(Instruction.CreateHere(token)); break;
         case "first":   insts.add(Instruction.CreateFirst(token)); break;
         case "rest":    insts.add(Instruction.CreateRest(token)); break;
+        case "len":     insts.add(Instruction.CreateLen(token)); break;
+        case "concat":  insts.add(Instruction.CreateConcat(token)); break;
         case "not":     insts.add(Instruction.CreateNot(token)); break;
         case "or":      insts.add(Instruction.CreateOr(token)); break;
         case "and":     insts.add(Instruction.CreateAnd(token)); break;
