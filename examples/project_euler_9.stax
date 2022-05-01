@@ -1,0 +1,59 @@
+# project euler 9
+# special pythagorean triplet
+
+# there exists exactly one pythagorean triplet for which a + b + c = 1000
+# find the product a * b * c
+
+# euclid's formula
+# given an arbitrary pair of integers m and n with m > n > 0
+# a = m^2 - n^2
+# b = 2 * m * n
+# c = m^2 + n^2
+
+
+
+# process
+# inputs: m n (top)
+# output: m n (a*b*c) (top)
+
+process (
+  2 dupn                                        # m n m n
+  2 dupn dup 2 bubbn dup mult 2 sinkn mult sub  # m n m n a
+  2 sinkn                                       # m n a m n
+  2 dupn                                        # m n a m n m n
+  2 mult mult 2 sinkn                           # m n a b m n
+  dup 2 bubbn dup mult 2 sinkn mult add         # m n a b c
+  3 dupn mult mult 3 sinkn                      # m n (a*b*c) a b c
+  add add                                       # m n (a*b*c) (a+b+c)
+  increment eval
+  (pop process eval) evalif pop
+) set
+
+
+# increment
+# inputs: m n (a*b*c) (a+b+c) (top)
+# outputs: m' n' (a*b*c) shouldLoop (top)
+
+increment (
+  dup dup 1000 lt
+  (4 bubbn 1 add 4 sinkn) evalif pop
+  1000 gt
+  (3 bubbn pop 2 bubbn 1 add dup 3 sinkn 1 add 3 sinkn) evalif pop
+  1000 neq
+) set
+
+2 1 process eval
+"a * b * c = " print println
+
+2 dupn
+2 dupn dup 2 bubbn dup mult 2 sinkn mult sub
+2 sinkn
+2 dupn
+2 mult mult 2 sinkn
+dup 2 bubbn dup mult 2 sinkn mult add
+"c = " print println
+"b = " print println
+"a = " print println
+"n = " print println
+"m = " print println
+
