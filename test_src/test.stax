@@ -1,6 +1,0 @@
-total 5 set
-
-total total 7 mult set
-
-total println
-total 35 neq println
