@@ -6,14 +6,15 @@ import java.io.FileReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Stack;
+
+import stax.frontend.Frontend;
+import stax.frontend.Instruction;
+import stax.frontend.Value;
+import stax.frontend.Type.BaseType;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-
-import stax.compiler.Compiler;
-import stax.compiler.Instruction;
-import stax.compiler.Value;
-import stax.compiler.Type.BaseType;
 
 public class StaxRunner {
 
@@ -54,7 +55,7 @@ public class StaxRunner {
   public void CompileFile(String sourcePath) throws FileNotFoundException
   {
     FileReader fr = new FileReader(new File(sourcePath));
-    Compiler comp = new Compiler(fr);
+    Frontend comp = new Frontend(fr);
     comp.compile();
     instructions = comp.instructions;
     memoryStack = new Stack<>();
@@ -63,7 +64,7 @@ public class StaxRunner {
 
   public void CompileSource(String source)
   {
-    Compiler comp = new Compiler(source);
+    Frontend comp = new Frontend(source);
     comp.compile();
     instructions = comp.instructions;
     memoryStack = new Stack<>();

@@ -1,4 +1,4 @@
-package stax.app;
+package stax;
 
 import java.io.FileNotFoundException;
 

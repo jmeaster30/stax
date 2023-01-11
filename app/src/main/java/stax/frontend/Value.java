@@ -1,10 +1,10 @@
-package stax.compiler;
+package stax.frontend;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import stax.compiler.Type.BaseType;
+import stax.frontend.Type.BaseType;
 
 public class Value {
   

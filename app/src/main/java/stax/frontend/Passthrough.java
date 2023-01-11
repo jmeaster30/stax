@@ -1,4 +1,4 @@
-package stax.compiler;
+package stax.frontend;
 
 import java.util.ArrayList;
 

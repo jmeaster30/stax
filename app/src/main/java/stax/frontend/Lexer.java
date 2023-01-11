@@ -1,4 +1,4 @@
-package stax.compiler;
+package stax.frontend;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,8 +7,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import stax.compiler.Token.TokenError;
-import stax.compiler.Token.TokenType;
+import stax.frontend.Token.TokenError;
+import stax.frontend.Token.TokenType;
 
 public class Lexer {
   

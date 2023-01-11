@@ -1,6 +1,6 @@
-package stax.compiler;
+package stax.frontend;
 
-import stax.compiler.Type.BaseType;
+import stax.frontend.Type.BaseType;
 
 public class Instruction {
   

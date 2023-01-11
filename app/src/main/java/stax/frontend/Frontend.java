@@ -1,19 +1,19 @@
-package stax.compiler;
+package stax.frontend;
 
 import java.io.FileReader;
 import java.util.ArrayList;
 
-import stax.compiler.Token.TokenType;
-import stax.compiler.Type.BaseType;
+import stax.frontend.Token.TokenType;
+import stax.frontend.Type.BaseType;
 
-public class Compiler {
+public class Frontend {
     
   public ArrayList<Instruction> instructions;
 
   private Lexer lexer;
   private ArrayList<Pass> semanticPasses;
 
-  public Compiler(FileReader fileReader)
+  public Frontend(FileReader fileReader)
   {
     instructions = new ArrayList<>();
     lexer = Lexer.fromFile(fileReader);
@@ -21,7 +21,7 @@ public class Compiler {
     semanticPasses.add(new Passthrough());
   }
 
-  public Compiler(String source)
+  public Frontend(String source)
   {
     instructions = new ArrayList<>();
     lexer = Lexer.fromSource(source);
