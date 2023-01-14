@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import struct
 
 if len(sys.argv) != 2:
   print("Whoops too many args :(")
@@ -19,7 +20,16 @@ with open(source, 'rb') as f:
     jbc.append(byte)
 
 with open(f"{source}.output", 'w') as output:
-  constant_pool_count = 0;
+  constant_pool_count = 0
+  constant_pool_size = 0
+  interfaces_pool_count = 0
+  interfaces_pool_size = 999999999
+  field_pool_count = 0
+  field_pool_size = 999999999
+  method_pool_count = 0
+  method_pool_size = 999999999
+  attribute_pool_count = 0
+  attribute_pool_size = 999999999
   idx = 0
   while idx < len(jbc):
     if idx == 0:
@@ -48,17 +58,400 @@ with open(f"{source}.output", 'w') as output:
       idx += 2
       continue
     if idx == 8:
+      output.write("\n")
       output.write(dofix(jbc[idx]))
       output.write(" ")
       output.write(dofix(jbc[idx + 1]))
-      constant_pool_count = int.from_bytes(jbc[idx:idx+2], 'big')
+      constant_pool_count = int.from_bytes(jbc[idx:idx+2], 'big') - 1
       output.write(f" : CONSTANT POOL COUNT ({constant_pool_count})\n")
-      constant_pool_count = int.from_bytes(jbc[idx:idx+2], 'big')
       idx += 2
       continue
     if idx == 10:
-      # TODO work through constant pool
-      idx += 1
+      for cpidx in range(constant_pool_count):
+        output.write("\n")
+        tag = int.from_bytes(jbc[idx:idx+1], 'big')
+        output.write(dofix(jbc[idx]))
+        output.write(" : CP TAG")
+        idx += 1
+        if tag == 1:
+          output.write(" - Utf8\n")
+          length = int.from_bytes(jbc[idx:idx+2], 'big')
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+1]))
+          output.write(" - Utf8 Length\n")
+          idx += 2
+          for utf8idx in range(0, length):
+            a = utf8idx + idx;
+            output.write(dofix(jbc[a]))
+            output.write(" ")
+          output.write("- Utf8 Bytes\n")
+          idx += length
+        elif tag == 3:
+          output.write(" - Integer\n")
+          value = int.from_bytes(jbc[idx:idx+4], 'big')
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+3]))
+          output.write(" ")
+          output.write(f"- Integer Value ({value})\n")
+          idx += 4
+        elif tag == 4:
+          output.write(" - Float\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+3]))
+          output.write(" ")
+          output.write("- Float Value\n")
+          idx += 4
+        elif tag == 5:
+          output.write(" - Long\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+3]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+4]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+5]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+6]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+7]))
+          output.write(" ")
+          output.write("- Long Value\n")
+          idx += 8
+        elif tag == 6:
+          output.write(" - Double\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+3]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+4]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+5]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+6]))
+          output.write(" ")
+          output.write(dofix(jbc[idx+7]))
+          output.write(" ")
+          output.write("- Double Value\n")
+          idx += 8
+        elif tag == 7:
+          output.write(" - Class\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : NameIndex\n")
+          idx += 2
+        elif tag == 8:
+          output.write(" - String\n")
+        elif tag == 9:
+          output.write(" - FieldRef\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : ClassIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : NameAndTypeIndex\n")
+          idx += 2
+        elif tag == 10:
+          output.write(" - MethodRef\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          idx += 2
+          output.write(" : ClassIndex\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : NameAndTypeIndex\n")
+          idx += 2
+        elif tag == 11:
+          output.write(" - InterfaceMethodRef\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : ClassIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" : NameAndTypeIndex\n")
+          idx += 2
+        elif tag == 12:
+          output.write(" - NameAndType\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - NameIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - DescriptorIndex\n")
+          idx += 2
+        elif tag == 15:
+          output.write(" - MethodHandle\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" - ReferenceKind\n")
+          idx += 1
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - ReferenceIndex\n")
+          idx += 2
+        elif tag == 16:
+          output.write(" - MethodType\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - DescriptorIndex\n")
+          idx += 2
+        elif tag == 17:
+          output.write(" - Dynamic\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - BootstrapMethodAttrIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - NameAndTypeIndex\n")
+          idx += 2
+        elif tag == 18:
+          output.write(" - InvokeDynamic\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - BootstrapMethodAttrIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - NameAndTypeIndex\n")
+          idx += 2
+        elif tag == 19:
+          output.write(" - Module\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - NameIndex\n")
+          idx += 2
+        elif tag == 20:
+          output.write(" - Package\n")
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" - NameIndex\n")
+          idx += 2
+        else:
+          output.write(" - unknown\n")
+      constant_pool_size = idx - 10
+      continue
+    if idx == 10 + constant_pool_size:
+      output.write("\n")
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      output.write(" : AccessFlags\n")
+      idx += 2
+      continue
+    if idx == 12 + constant_pool_size:
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      output.write(" : ThisClass\n")
+      idx += 2
+      continue
+    if idx == 14 + constant_pool_size:
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      output.write(" : SuperClass\n")
+      idx += 2
+      continue
+    if idx == 16 + constant_pool_size:
+      output.write("\n")
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      interfaces_pool_count = int.from_bytes(jbc[idx:idx+2], 'big')
+      output.write(f" : InterfacesCount ({interfaces_pool_count})\n")
+      idx += 2
+      continue
+    if idx == 18 + constant_pool_size + interfaces_pool_size:
+      output.write("\n")
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      field_pool_count = int.from_bytes(jbc[idx:idx+2], 'big')
+      output.write(f" : FieldCount ({interfaces_pool_count})\n")
+      idx += 2
+      continue
+    if idx == 18 + constant_pool_size:
+      for ipidx in range(interfaces_pool_count):
+        output.write("\n")
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" : Interface\n")
+        idx += 2
+      interfaces_pool_size = idx - (18 + constant_pool_size)
+      continue
+    if idx == 20 + constant_pool_size + interfaces_pool_size + field_pool_size:
+      output.write("\n")
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      method_pool_count = int.from_bytes(jbc[idx:idx+2], 'big')
+      output.write(f" : MethodCount ({method_pool_count})\n")
+      idx += 2
+      continue
+    if idx == 20 + constant_pool_size + interfaces_pool_size:
+      print("small fart")
+      for ipidx in range(field_pool_count):
+        output.write("\n")
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - AccessFlags\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - NameIndex\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - DescriptorIndex\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        field_attributes_count = int.from_bytes(jbc[idx:idx+2], 'big')
+        output.write(" - AttributesCount\n")
+        idx += 2
+        for faidx in range(field_attributes_count):
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" ::: AccessFlags\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 3]))
+          faa_count = int.from_bytes(jbc[idx:idx+4], 'big')
+          output.write(f" :: AttrbutesLength ({faa_count})\n")
+          idx += 4
+          for faaidx in range(faa_count):
+            output.write(dofix(jbc[idx]))
+            output.write(f" :: Attribute ({faa_count})\n")
+            idx += 1
+          output.write("\n")
+        idx += 2
+      field_pool_size = idx - (20 + constant_pool_size + interfaces_pool_size)
+      continue
+    if idx == 22 + constant_pool_size + interfaces_pool_size + field_pool_size + method_pool_size:
+      output.write(dofix(jbc[idx]))
+      output.write(" ")
+      output.write(dofix(jbc[idx + 1]))
+      method_attributes_count = int.from_bytes(jbc[idx:idx+2], 'big')
+      output.write(" : AttributesCount\n")
+      idx += 2
+      for faidx in range(method_attributes_count):
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - NameIndex\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 2]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 3]))
+        faa_count = int.from_bytes(jbc[idx:idx+4], 'big')
+        output.write(f" :: AttributesLength ({faa_count})\n")
+        idx += 4
+        for faaidx in range(faa_count):
+          output.write(dofix(jbc[idx]))
+          output.write(f" :: Attribute ({faa_count})\n")
+          idx += 1
+        output.write("\n")
+      continue
+    if idx == 22 + constant_pool_size + interfaces_pool_size + field_pool_size:
+      print("bug fart")
+      for ipidx in range(method_pool_count):
+        output.write("\n")
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - AccessFlags\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - NameIndex\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        output.write(" - DescriptorIndex\n")
+        idx += 2
+        output.write(dofix(jbc[idx]))
+        output.write(" ")
+        output.write(dofix(jbc[idx + 1]))
+        method_attributes_count = int.from_bytes(jbc[idx:idx+2], 'big')
+        output.write(" - AttributesCount\n")
+        idx += 2
+        for faidx in range(method_attributes_count):
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" ::: NameIndex\n")
+          idx += 2
+          output.write(dofix(jbc[idx]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 1]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 2]))
+          output.write(" ")
+          output.write(dofix(jbc[idx + 3]))
+          faa_count = int.from_bytes(jbc[idx:idx+4], 'big')
+          output.write(f" :: AttributesLength ({faa_count})\n")
+          idx += 4
+          for faaidx in range(faa_count):
+            output.write(dofix(jbc[idx]))
+            output.write(f" :: Attribute ({faa_count})\n")
+            idx += 1
+          output.write("\n")
+      method_pool_size = idx - (22 + constant_pool_size + interfaces_pool_size + field_pool_size)
       continue
     converted_byte = dofix(jbc[idx])
     idx += 1
